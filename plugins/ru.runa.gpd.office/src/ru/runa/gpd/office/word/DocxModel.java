@@ -66,7 +66,10 @@ public class DocxModel extends Observable {
     public void validate(GraphElement graphElement, List<ValidationError> errors) {
         for (DocxTableModel tableModel : tables) {
             for (DocxColumnModel columnModel : tableModel.columns) {
-                if (Strings.isNullOrEmpty(columnModel.variable)) {
+                boolean usesListVariable = !Strings.isNullOrEmpty(tableModel.getListVariable());
+                boolean columnIsEmpty = usesListVariable ? Strings.isNullOrEmpty(columnModel.getAttribute())
+                        : Strings.isNullOrEmpty(columnModel.getVariable());
+                if (columnIsEmpty) {
                     errors.add(ValidationError.createError(graphElement, Messages.getString("model.validation.docx.table.column.empty")));
                     break;
                 }

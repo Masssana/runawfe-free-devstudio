@@ -68,7 +68,7 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
 
     @Override
     protected boolean validateModel(Delegable delegable, DocxModel model, List<ValidationError> errors) {
-        GraphElement graphElement = ((GraphElement) delegable);
+        GraphElement graphElement = (GraphElement) delegable;
         model.validate(graphElement, errors);
         return super.validateModel(delegable, model, errors);
     }
@@ -100,8 +100,8 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
         try {
             DocxModel model = fromXml(source.getDelegationConfiguration());
             if (EmbeddedFileUtils.isProcessFile(model.getInOutModel().inputPath)) {
-                model.getInOutModel().inputPath = EmbeddedFileUtils.copyProcessFile(
-                        sourceFolder, source, model.getInOutModel().inputPath, targetFolder, target);
+                model.getInOutModel().inputPath = EmbeddedFileUtils.copyProcessFile(sourceFolder, source, model.getInOutModel().inputPath,
+                        targetFolder, target);
                 target.setDelegationConfiguration(model.toString());
             }
         } catch (Exception e) {
@@ -151,8 +151,8 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                 }
 
                 FilesSupplierMode filesSupplierMode = FilesSupplierMode.BOTH;
-                if (null == dialogEnhancementMode || (dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)
-                        && dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT))) {
+                if (null == dialogEnhancementMode || dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)
+                        && dialogEnhancementMode.isOrDefault(DocxDialogEnhancementMode.DOCX_SHOW_OUTPUT)) {
                     filesSupplierMode = FilesSupplierMode.BOTH;
                 } else if (dialogEnhancementMode.is(DocxDialogEnhancementMode.DOCX_SHOW_INPUT)) {
                     filesSupplierMode = FilesSupplierMode.IN;
@@ -222,6 +222,25 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
                     model.getTables().get(tableIndex).setStyleName(styleText.getText());
                 }
             });
+
+            Label labelList = new Label(pgroup, SWT.None);
+            labelList.setText(Messages.getString("label.ListVariable"));
+            final Combo listCombo = new Combo(pgroup, SWT.READ_ONLY);
+            listCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            for (String varName : delegable.getVariableNames(true, List.class.getName())) {
+                listCombo.add(varName);
+            }
+
+            listCombo.setText(tableModel.getListVariable());
+            listCombo.addSelectionListener(new LoggingSelectionAdapter() {
+                @Override
+                protected void onSelection(SelectionEvent e) throws Exception {
+                    tableModel.setListVariable(listCombo.getText());
+                }
+
+            });
+
             final Button addBreak = new Button(pgroup, SWT.CHECK);
             addBreak.setText(Messages.getString("label.tableAddBreak"));
             addBreak.setSelection(model.getTables().get(tableIndex).isAddBreak());
@@ -269,19 +288,16 @@ public class DocxHandlerCellEditorProvider extends XmlBasedConstructorProvider<D
         }
 
         private void addColumnSection(Composite parent, final DocxColumnModel columnModel, final int tableIndex, final int columnIndex) {
-            final Combo combo = new Combo(parent, SWT.READ_ONLY);
-            for (String variableName : delegable.getVariableNames(true, List.class.getName())) {
-                combo.add(variableName);
-            }
-            combo.setText(columnModel.variable);
-            combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            combo.addSelectionListener(new LoggingSelectionAdapter() {
-
+            final Text attributeText = new Text(parent, SWT.BORDER);
+            attributeText.setText(columnModel.getAttribute());
+            attributeText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            attributeText.addModifyListener(new LoggingModifyTextAdapter() {
                 @Override
-                protected void onSelection(SelectionEvent e) throws Exception {
-                    columnModel.variable = combo.getText();
+                protected void onTextChanged(ModifyEvent e) throws Exception {
+                    columnModel.setAttribute(attributeText.getText());
                 }
             });
+
             if (columnIndex != 0) {
                 SwtUtils.createLink(parent, Localization.getString("button.up"), new LoggingHyperlinkAdapter() {
 

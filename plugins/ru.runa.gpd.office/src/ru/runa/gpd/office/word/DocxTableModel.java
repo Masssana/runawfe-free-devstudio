@@ -14,6 +14,15 @@ public class DocxTableModel extends Observable {
     private String styleName = "";
     private boolean addBreak = true;
     public List<DocxColumnModel> columns = new ArrayList<DocxColumnModel>();
+    private String listVariable = "";
+
+    public String getListVariable() {
+        return listVariable;
+    }
+
+    public void setListVariable(String listVariable) {
+        this.listVariable = listVariable;
+    }
 
     public String getName() {
         return name;
@@ -42,6 +51,7 @@ public class DocxTableModel extends Observable {
     public void serialize(Document document, Element parent) {
         Element el = parent.addElement("table");
         el.addAttribute("name", name);
+        el.addAttribute("listVariable", listVariable);
         if (styleName.length() > 0) {
             el.addAttribute("styleName", styleName);
         }
@@ -55,6 +65,7 @@ public class DocxTableModel extends Observable {
         DocxTableModel model = new DocxTableModel();
         model.name = element.attributeValue("name");
         model.styleName = element.attributeValue("styleName");
+        model.listVariable = element.attributeValue("listVariable");
         if (model.styleName == null) {
             model.styleName = "";
         }
